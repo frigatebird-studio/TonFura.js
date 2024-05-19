@@ -1,0 +1,23 @@
+{
+  "name": "@tonfura/adapter",
+  "version": "0.0.1",
+  "main": "./index.cjs",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    }
+  },
+  "types": "./index.d.ts",
+  "dependencies": {
+    "@ton/core": "^0.56.3",
+    "@ton/crypto": "^3.2.0",
+    "@ton/ton": "^13.11.1",
+    "axios": "^1.7.1",
+    "tonweb": "^0.0.66"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

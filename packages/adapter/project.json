@@ -1,0 +1,37 @@
+{
+  "name": "adapter",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/adapter/src",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "generatorOptions": {
+        "packageRoot": "dist/{projectRoot}",
+        "currentVersionResolver": "git-tag"
+      }
+    }
+  },
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/adapter/dist",
+        "main": "packages/adapter/src/index.ts",
+        "tsConfig": "packages/adapter/tsconfig.lib.json",
+        "assets": ["packages/adapter/*.md"],
+        "format": ["cjs", "esm"],
+        "metafile": true,
+        "declaration": true,
+        "esbuildConfig": "packages/adapter/esbuild.config.ts",
+        "declarationRootDir": "/packages/adapter/src"
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "{projectRoot}/dist"
+      }
+    }
+  }
+}
