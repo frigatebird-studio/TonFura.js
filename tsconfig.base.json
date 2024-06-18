@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@tonfura/adapter": ["packages/adapter/src/index.ts"]
+      "@tonfura/adapter": ["packages/adapter/src/index.ts"],
+      "@tonfura/core": ["packages/core/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

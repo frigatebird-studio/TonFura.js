@@ -1,0 +1,36 @@
+{
+  "name": "core",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/core/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "packages/core/dist",
+        "main": "packages/core/src/index.ts",
+        "tsConfig": "packages/core/tsconfig.lib.json",
+        "assets": ["packages/core/*.md"],
+        "format": ["cjs", "esm"],
+        "declaration": true,
+        "esbuildConfig": "packages/core/esbuild.config.ts",
+        "declarationRootDir": "/packages/core/src"
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "{projectRoot}/dist"
+      }
+    }
+  },
+  "tags": [],
+  "release": {
+    "version": {
+      "generatorOptions": {
+        "packageRoot": "{projectRoot}/dist",
+        "currentVersionResolver": "git-tag"
+      }
+    }
+  }
+}
