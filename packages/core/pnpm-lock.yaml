@@ -1,12 +1,58 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@ton/core': ^0.56.3
+  '@ton/crypto': ^3.2.0
+  '@ton/ton': ^13.11.2
   axios: ^1.7.2
 
 dependencies:
+  '@ton/core': 0.56.3_@ton+crypto@3.2.0
+  '@ton/crypto': 3.2.0
+  '@ton/ton': 13.11.2_eaxegtbouby4kjomal7ejdspxm
   axios: 1.7.2
 
 packages:
+
+  /@ton/core/0.56.3_@ton+crypto@3.2.0:
+    resolution: {integrity: sha512-HVkalfqw8zqLLPehtq0CNhu5KjVzc7IrbDwDHPjGoOSXmnqSobiWj8a5F+YuWnZnEbQKtrnMGNOOjVw4LG37rg==}
+    peerDependencies:
+      '@ton/crypto': '>=3.2.0'
+    dependencies:
+      '@ton/crypto': 3.2.0
+      symbol.inspect: 1.0.1
+    dev: false
+
+  /@ton/crypto-primitives/2.0.0:
+    resolution: {integrity: sha512-wttiNClmGbI6Dfy/8oyNnsIV0b/qYkCJz4Gn4eP62lJZzMtVQ94Ko7nikDX1EfYHkLI1xpOitWpW+8ZuG6XtDg==}
+    dependencies:
+      jssha: 3.2.0
+    dev: false
+
+  /@ton/crypto/3.2.0:
+    resolution: {integrity: sha512-50RkwReEuV2FkxSZ8ht/x9+n0ZGtwRKGsJ0ay4I/HFhkYVG/awIIBQeH0W4j8d5lADdO5h01UtX8PJ8AjiejjA==}
+    dependencies:
+      '@ton/crypto-primitives': 2.0.0
+      jssha: 3.2.0
+      tweetnacl: 1.0.3
+    dev: false
+
+  /@ton/ton/13.11.2_eaxegtbouby4kjomal7ejdspxm:
+    resolution: {integrity: sha512-EPqW+ZTe0MmfqguJEIGMuAqTAFRKMEce95HlDx8h6CGn2y3jiMgV1/oO+WpDIOiX+1wnTu+xtajk8JTWr8nKRQ==}
+    peerDependencies:
+      '@ton/core': '>=0.56.0'
+      '@ton/crypto': '>=3.2.0'
+    dependencies:
+      '@ton/core': 0.56.3_@ton+crypto@3.2.0
+      '@ton/crypto': 3.2.0
+      axios: 1.7.2
+      dataloader: 2.2.2
+      symbol.inspect: 1.0.1
+      teslabot: 1.5.0
+      zod: 3.23.8
+    transitivePeerDependencies:
+      - debug
+    dev: false
 
   /asynckit/0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
@@ -27,6 +73,10 @@ packages:
     engines: {node: '>= 0.8'}
     dependencies:
       delayed-stream: 1.0.0
+    dev: false
+
+  /dataloader/2.2.2:
+    resolution: {integrity: sha512-8YnDaaf7N3k/q5HnTJVuzSyLETjoZjVmHc4AeKAzOvKHEFQKcn64OKBfzHYtE9zGjctNM7V9I0MfnUVLpi7M5g==}
     dev: false
 
   /delayed-stream/1.0.0:
@@ -53,6 +103,10 @@ packages:
       mime-types: 2.1.35
     dev: false
 
+  /jssha/3.2.0:
+    resolution: {integrity: sha512-QuruyBENDWdN4tZwJbQq7/eAK85FqrI4oDbXjy5IBhYD+2pTJyBUWZe8ctWaCkrV0gy6AaelgOZZBMeswEa/6Q==}
+    dev: false
+
   /mime-db/1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
     engines: {node: '>= 0.6'}
@@ -67,4 +121,20 @@ packages:
 
   /proxy-from-env/1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
+    dev: false
+
+  /symbol.inspect/1.0.1:
+    resolution: {integrity: sha512-YQSL4duoHmLhsTD1Pw8RW6TZ5MaTX5rXJnqacJottr2P2LZBF/Yvrc3ku4NUpMOm8aM0KOCqM+UAkMA5HWQCzQ==}
+    dev: false
+
+  /teslabot/1.5.0:
+    resolution: {integrity: sha512-e2MmELhCgrgZEGo7PQu/6bmYG36IDH+YrBI1iGm6jovXkeDIGa3pZ2WSqRjzkuw2vt1EqfkZoV5GpXgqL8QJVg==}
+    dev: false
+
+  /tweetnacl/1.0.3:
+    resolution: {integrity: sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==}
+    dev: false
+
+  /zod/3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
     dev: false
