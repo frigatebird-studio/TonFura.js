@@ -17,7 +17,7 @@ type RangeOf<F extends number, T extends number> = Exclude<
 >;
 
 export type PrimitiveType =
-  | `int${RangeOf<0, 257>}`
+  | `int${RangeOf<0, 256>}`
   | `uint${RangeOf<0, 256>}`
   | "slice";
 
