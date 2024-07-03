@@ -1,6 +1,6 @@
 {
   "name": "@tonfurajs/core",
-  "version": "0.0.1",
+  "version": "1.1.0",
   "dependencies": {
     "@ton/core": "^0.56.3",
     "@ton/crypto": "^3.2.0",
