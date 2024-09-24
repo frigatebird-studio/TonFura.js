@@ -1,6 +1,6 @@
 {
-  "name": "@tonfura/adapter",
-  "version": "1.1.0",
+  "name": "@tonxjs/adapter",
+  "version": "0.1.0",
   "main": "./index.cjs",
   "type": "module",
   "exports": {
@@ -15,7 +15,8 @@
     "@ton/crypto": "^3.2.0",
     "@ton/ton": "^13.11.1",
     "axios": "^1.7.1",
-    "tonweb": "^0.0.66"
+    "tonweb": "^0.0.66",
+    "zod": "^3.23.8"
   },
   "engines": {
     "node": ">=18.0.0"
