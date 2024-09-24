@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { version } from "../../package.json";
+import { getJsonRpcUrl, getRestUrl } from './utils'
 
 type Network = "mainnet" | "testnet";
 
@@ -20,11 +21,15 @@ class TonClient4Adapter {
   ) {
     this.network = network;
     this.apiKey = apiKey;
-    this.endpoint = `https://${network}-rpc.tonxapi.com/v2/json-rpc/${apiKey}`
+    this.endpoint = getJsonRpcUrl(network, apiKey);
   }
 
-  version() {    
+  version() {
     return version;
+  }
+
+  getRestEndpoint(path: string) {
+    return getRestUrl(path, this.network, this.apiKey);
   }
 
   /**
@@ -73,15 +78,15 @@ export default TonClient4Adapter;
 
 const lastBlockCodec = z.object({
   last: z.object({
-      seqno: z.number(),
-      shard: z.string(),
-      workchain: z.number(),
-      fileHash: z.string(),
-      rootHash: z.string()
+    seqno: z.number(),
+    shard: z.string(),
+    workchain: z.number(),
+    fileHash: z.string(),
+    rootHash: z.string()
   }),
   init: z.object({
-      fileHash: z.string(),
-      rootHash: z.string()
+    fileHash: z.string(),
+    rootHash: z.string()
   }),
   stateRootHash: z.string(),
   now: z.number()
