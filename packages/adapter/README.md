@@ -2,7 +2,7 @@
 
 TONX JS adapter is an easy integration tool with popular ton client library. 
 - [@ton/ton](https://github.com/ton-org/ton) 
-- [tonweb](https://github.com/toncenter/tonweb))
+- [tonweb](https://github.com/toncenter/tonweb)
 - [TonClient4](https://github.com/ton-org/ton/blob/master/src/client/TonClient4.ts)
 
 ## Usage
