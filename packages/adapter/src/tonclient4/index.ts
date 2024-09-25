@@ -44,6 +44,21 @@ class TonClient4Adapter {
     return data;
   }
 
+  async sendRest(path: string, method: 'GET' | 'POST' | 'UPDATE' | 'DELETE', params: any) {
+    let url = this.getRestEndpoint(path);
+    if (method === 'GET' && params) {
+      url += '?' + new URLSearchParams(params).toString();
+    }
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: method !== 'GET' ? JSON.stringify(params) : undefined,
+    });
+    return response.json();
+  }
+
   /**
      * Get Last Block
      * @returns last block info
