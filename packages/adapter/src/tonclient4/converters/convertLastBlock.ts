@@ -1,24 +1,5 @@
-import { z } from 'zod';
-import { lastBlockCodec } from '../types';
+import { LastBlock, MasterChainInfoResponse } from '../types';
 import { convertHexShardToSignedNumberStr } from '../utils'
-
-type MasterChainInfoResponse = {
-  result: {
-    first: {
-      file_hash: string
-      root_hash: string
-    }
-    last: {
-      file_hash: string
-      root_hash: string
-      seqno: number
-      shard: string
-      workchain: number
-    }
-  }
-}
-
-type LastBlock = z.infer<typeof lastBlockCodec>;
 
 export function convertLastBlock(data: MasterChainInfoResponse): LastBlock {
   return {

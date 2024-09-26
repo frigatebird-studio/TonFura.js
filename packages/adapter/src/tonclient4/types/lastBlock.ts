@@ -15,3 +15,5 @@ export const lastBlockCodec = z.object({
   stateRootHash: z.string(),
   now: z.number()
 });
+
+export type LastBlock = z.infer<typeof lastBlockCodec>;
