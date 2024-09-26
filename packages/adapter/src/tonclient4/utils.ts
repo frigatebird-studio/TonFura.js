@@ -12,7 +12,8 @@ export function getRestUrl(path: string, network: string, apiKey: string) {
 }
 
 export function convertHexShardToSignedNumberStr(hexShard: string) {
-    const shard = parseInt(hexShard, 16);
-    const signedNum = shard > 0x7fffffff ? shard - 0x100000000 : shard;
+    const num = BigInt(`0x${hexShard}`);
+
+    const signedNum = num >= 2n ** 63n ? num - 2n ** 64n : num;
     return signedNum.toString();
 }
