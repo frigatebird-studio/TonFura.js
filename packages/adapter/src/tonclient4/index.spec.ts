@@ -1,5 +1,6 @@
 import TonClient4Adapter from './index';
 import { version as packageVersion } from "../../package.json";
+import { convertHexShardToSignedNumberStr } from './utils';
 
 describe('TonClient4Adapter', () => {
   const network = 'testnet';
@@ -31,7 +32,7 @@ describe('TonClient4Adapter', () => {
           file_hash: 'last-file-hash',
           root_hash: 'last-root-hash',
           seqno: 123,
-          shard: '0x80000000',
+          shard: '8000000000000000',
           workchain: -1,
         },
       },
@@ -54,7 +55,7 @@ describe('TonClient4Adapter', () => {
         fileHash: 'last-file-hash',
         rootHash: 'last-root-hash',
         seqno: 123,
-        shard: '-2147483648',
+        shard: '-9223372036854775808',
         workchain: -1,
       },
       stateRootHash: '',
@@ -85,7 +86,7 @@ describe('TonClient4Adapter', () => {
           file_hash: 'last-file-hash',
           root_hash: 'last-root-hash',
           seqno: 123,
-          shard: '0x80000000',
+          shard: '8000000000000000',
           workchain: -1,
         },
       },
@@ -101,5 +102,25 @@ describe('TonClient4Adapter', () => {
     mockResponse.result.last.seqno = 'not-a-number' as any;
 
     await expect(tonClient.getLastBlock()).rejects.toThrow('Mailformed response:');
+  });
+});
+
+describe('convertHexShardToSignedNumberStr', () => {
+  it('should convert hex shard to signed number string correctly', () => {
+    const hexShard = '8000000000000000';
+    const signedNumberStr = convertHexShardToSignedNumberStr(hexShard);
+    expect(signedNumberStr).toBe('-9223372036854775808');
+  });
+
+  it('should handle positive hex shard correctly', () => {
+    const hexShard = '0000000000000001';
+    const signedNumberStr = convertHexShardToSignedNumberStr(hexShard);
+    expect(signedNumberStr).toBe('1');
+  });
+
+  it('should handle zero hex shard correctly', () => {
+    const hexShard = '0000000000000000';
+    const signedNumberStr = convertHexShardToSignedNumberStr(hexShard);
+    expect(signedNumberStr).toBe('0');
   });
 });
