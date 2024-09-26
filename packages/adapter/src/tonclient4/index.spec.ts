@@ -1,6 +1,7 @@
 import TonClient4Adapter from './index';
 import { version as packageVersion } from "../../package.json";
 import { convertHexShardToSignedNumberStr } from './utils';
+import { Address } from '@ton/core';
 
 describe('TonClient4Adapter', () => {
   const network = 'testnet';
@@ -221,6 +222,123 @@ describe('TonClient4Adapter', () => {
 
     await expect(tonClient.getBlock(seqno)).rejects.toThrow('Block is out of scope');
   });
+
+  it('should fetch account information correctly', async () => {
+    const seqno = 123;
+    const address = Address.parse('EQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4TiUt');
+    const mockResponse = {
+      "result": {
+        "@type": "raw.fullAccountState",
+        "balance": "2507362398469",
+        "code": "te6cckECJgEACVwAART...long_code_here",
+        "data": "te6cckECVgEAFgUABEN...long_data_here",
+        "last_transaction_id": {
+            "@type": "internal.transactionId",
+            "lt": "49472270000045",
+            "hash": "7Oyj8VbpCJl9EiqHDdV6NTPABphrObD0MWdeUP7m2ag="
+        },
+        "block_id": {
+            "@type": "ton.blockIdExt",
+            "workchain": -1,
+            "shard": "8000000000000000",
+            "seqno": 40656952,
+            "root_hash": "15CcsNDcnxwTxjzc5ykdEpuXAKr5LMkVXBL3t2/KPcQ=",
+            "file_hash": "bHAo3Qzp0N47FpMorbJ+XVJiDy5Ua3cA3BNEEtoPqD8="
+        },
+        "frozen_hash": "",
+        "sync_utime": 1727347904,
+        "@extra": "1727347933.783723:0:0.13673754836657925",
+        "state": "active"
+      },
+    };
+
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(mockResponse),
+      })
+    ) as jest.Mock;
+
+    const account = await tonClient.getAccount(seqno, address);
+
+    expect(account).toEqual({
+      account: {
+        "state": {
+          "type": "active",
+          "code": "te6cckECJgEACVwAART...long_code_here",
+          "data": "te6cckECVgEAFgUABEN...long_data_here",
+        },
+        "balance": {
+          "coins": "2507362398469"
+        },
+        "last": {
+          "lt": "49472270000045",
+          "hash": "7Oyj8VbpCJl9EiqHDdV6NTPABphrObD0MWdeUP7m2ag="
+        },
+        storageStat: null
+      },
+      block: {
+        "workchain": -1,
+        "seqno": 40656952,
+        "shard": "-9223372036854775808",
+        "rootHash": "15CcsNDcnxwTxjzc5ykdEpuXAKr5LMkVXBL3t2/KPcQ=",
+        "fileHash": "bHAo3Qzp0N47FpMorbJ+XVJiDy5Ua3cA3BNEEtoPqD8="
+      }
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(tonClient.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: 0,
+        jsonrpc: "2.0",
+        method: "getAddressInformation",
+        params: {
+          address: address.toString(),
+        },
+      }),
+    });
+  });
+
+  it('should throw an error if the account response is malformed', async () => {
+    const seqno = 123;
+    const address = Address.parse('EQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4TiUt');
+    const mockResponse = {
+      "result": {
+        "@type": "raw.fullAccountState",
+        "balance": "2507362398469",
+        "code": "te6cckECJgEACVwAART...long_code_here",
+        "data": "te6cckECVgEAFgUABEN...long_data_here",
+        "last_transaction_id": {
+            "@type": "internal.transactionId",
+            "lt": "49472270000045",
+            "hash": "7Oyj8VbpCJl9EiqHDdV6NTPABphrObD0MWdeUP7m2ag="
+        },
+        "block_id": {
+            "@type": "ton.blockIdExt",
+            "workchain": -1,
+            "shard": "8000000000000000",
+            "seqno": 40656952,
+            "root_hash": "15CcsNDcnxwTxjzc5ykdEpuXAKr5LMkVXBL3t2/KPcQ=",
+            "file_hash": "bHAo3Qzp0N47FpMorbJ+XVJiDy5Ua3cA3BNEEtoPqD8="
+        },
+        "frozen_hash": "",
+        "sync_utime": 1727347904,
+        "@extra": "1727347933.783723:0:0.13673754836657925",
+        "state": "active"
+      },
+    };
+    mockResponse.result.state = 0 as any;
+
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(mockResponse),
+      })
+    ) as jest.Mock;
+
+    await expect(tonClient.getAccount(seqno, address)).rejects.toThrow('Mailformed response');
+  });
 });
 
 describe('convertHexShardToSignedNumberStr', () => {
@@ -242,4 +360,3 @@ describe('convertHexShardToSignedNumberStr', () => {
     expect(signedNumberStr).toBe('0');
   });
 });
-

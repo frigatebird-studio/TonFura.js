@@ -1,10 +1,19 @@
+import { Address } from '@ton/core';
 import { version } from "../../package.json";
 import { getJsonRpcUrl, getRestUrl, sendRpcArray } from './utils'
-import { lastBlockCodec, ShardsResponse, GetBlockTransactionsResponse, blockCodec, SeqnoSet } from './types'
+import { 
+  lastBlockCodec,
+  ShardsResponse,
+  GetBlockTransactionsResponse,
+  blockCodec,
+  SeqnoSet,
+  accountCodec,
+} from './types'
 import {
   convertLastBlock,
   convertGetBlockTransactionsInputs,
   convertGetBlock,
+  convertGetAccount,
 } from './converters'
 
 type Network = "mainnet" | "testnet";
@@ -91,7 +100,6 @@ class TonClient4Adapter {
 
     
     let block = blockCodec.safeParse(result);
-    console.log('result \n\n', JSON.stringify(result, null, 2), '\n\n', block.error?.format()._errors.join(', '));
     if (!block.success) {
       throw Error('Mailformed response');
     }
@@ -99,6 +107,24 @@ class TonClient4Adapter {
       throw Error('Block is out of scope');
     }
     return block.data.block;
+  }
+
+  /**
+     * Get block info by seqno
+     * @param seqno block sequence number
+     * @param address account address
+     * @returns account info
+     */
+  async getAccount(seqno: number, address: Address) {
+    const data = await this.sendRpc('getAddressInformation', {
+      address: address.toString(),
+    });
+    const result = convertGetAccount(data);
+    let account = accountCodec.safeParse(result);
+    if (!account.success) {
+        throw Error('Mailformed response');
+    }
+    return account.data;
   }
 }
 

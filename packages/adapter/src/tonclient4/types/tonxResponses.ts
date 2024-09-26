@@ -50,3 +50,27 @@ export type GetBlockTransactionsResponse = {
     }[]
   }
 }
+
+export type GetAddressInformationResponse = {
+  result: {
+    balance: string
+    code: string
+    data: string
+    last_transaction_id: {
+      "@type": "internal.transactionId",
+      lt: string,
+      hash: string
+    }
+    block_id: {
+      "@type": "ton.blockIdExt"
+      workchain: number
+      shard: string
+      seqno: number
+      root_hash: string
+      file_hash: string
+    }
+    frozen_hash: string
+    sync_utime: number
+    state: "uninit" | "active" | "frozen"
+  }
+}
