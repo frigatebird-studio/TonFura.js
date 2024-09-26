@@ -103,6 +103,124 @@ describe('TonClient4Adapter', () => {
 
     await expect(tonClient.getLastBlock()).rejects.toThrow('Mailformed response:');
   });
+
+  it('should fetch getBlock correctly', async () => {
+    const seqno = 123;
+    const mockShardsResponse = {
+      ok: true,
+      result: {
+        shards: [
+          {
+            workchain: 0,
+            shard: '2000000000000000',
+            seqno: 40632776,
+          },
+        ],
+      }
+    };
+
+    const mockBlockTransactionsResponse = {
+      id: 0,
+      jsonrpc: "2.0",
+      result: {
+        transactions: [],
+        id: {
+          workchain: -1,
+          shard: "8000000000000000",
+          seqno,
+          root_hash: 'root-hash',
+          file_hash: 'file-hash',
+        }
+      },
+    };
+    const mockBlockTransactionsResponse2 = {
+      id: 0,
+      jsonrpc: "2.0",
+      result: {
+        transactions: [],
+        id: {
+          workchain: 0,
+          shard: "2000000000000000",
+          seqno: 40632776,
+          root_hash: 'root-hash',
+          file_hash: 'file-hash',
+        }
+      },
+    };
+
+    global.fetch = jest.fn()
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve(mockShardsResponse),
+      })
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve(mockBlockTransactionsResponse),
+      })
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve(mockBlockTransactionsResponse2),
+      });
+
+    const block = await tonClient.getBlock(seqno);
+
+    expect(block).toEqual({
+      shards: [
+        {
+          workchain: mockBlockTransactionsResponse.result.id.workchain,
+          shard: convertHexShardToSignedNumberStr(mockBlockTransactionsResponse.result.id.shard),
+          seqno: mockBlockTransactionsResponse.result.id.seqno,
+          rootHash: mockBlockTransactionsResponse.result.id.root_hash,
+          fileHash: mockBlockTransactionsResponse.result.id.file_hash,
+          transactions: [],
+        },
+        {
+          workchain: mockBlockTransactionsResponse2.result.id.workchain,
+          shard: convertHexShardToSignedNumberStr(mockBlockTransactionsResponse2.result.id.shard),
+          seqno: mockBlockTransactionsResponse2.result.id.seqno,
+          rootHash: mockBlockTransactionsResponse2.result.id.root_hash,
+          fileHash: mockBlockTransactionsResponse2.result.id.file_hash,
+          transactions: [],
+        }
+      ],
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(3);
+    expect(global.fetch).toHaveBeenCalledWith(tonClient.getRestEndpoint('shards') + `?seqno=${seqno}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    expect(global.fetch).toHaveBeenCalledWith(tonClient.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: 0,
+        jsonrpc: "2.0",
+        method: "getBlockTransactions",
+        params: {
+          workchain: -1,
+          shard: '8000000000000000',
+          seqno: 123,
+        },
+      }),
+    });
+  });
+
+  it('should throw an error if block is out of scope', async () => {
+    const seqno = 123;
+    const mockShardsResponse = {
+      ok: false,
+    };
+
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(mockShardsResponse),
+      })
+    ) as jest.Mock;
+
+    await expect(tonClient.getBlock(seqno)).rejects.toThrow('Block is out of scope');
+  });
 });
 
 describe('convertHexShardToSignedNumberStr', () => {
@@ -124,3 +242,4 @@ describe('convertHexShardToSignedNumberStr', () => {
     expect(signedNumberStr).toBe('0');
   });
 });
+

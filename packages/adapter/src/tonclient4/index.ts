@@ -1,7 +1,11 @@
 import { version } from "../../package.json";
-import { getJsonRpcUrl, getRestUrl } from './utils'
-import { lastBlockCodec } from './types'
-import { convertLastBlock, } from './converters'
+import { getJsonRpcUrl, getRestUrl, sendRpcArray } from './utils'
+import { lastBlockCodec, ShardsResponse, GetBlockTransactionsResponse, blockCodec, SeqnoSet } from './types'
+import {
+  convertLastBlock,
+  convertGetBlockTransactionsInputs,
+  convertGetBlock,
+} from './converters'
 
 type Network = "mainnet" | "testnet";
 
@@ -72,6 +76,29 @@ class TonClient4Adapter {
       throw Error('Mailformed response: ' + lastBlock.error.format()._errors.join(', '));
     }
     return lastBlock.data;
+  }
+
+  /**
+     * Get block info
+     * @param seqno block sequence number
+     * @returns block info
+     */
+  async getBlock(seqno: number) {
+    const data: ShardsResponse = await this.sendRest('shards', 'GET', { seqno })
+    const inputs = convertGetBlockTransactionsInputs(seqno, data);
+    const transactionsData = await sendRpcArray<SeqnoSet, GetBlockTransactionsResponse>(this.sendRpc.bind(this), inputs);
+    const result = convertGetBlock(transactionsData);
+
+    
+    let block = blockCodec.safeParse(result);
+    console.log('result \n\n', JSON.stringify(result, null, 2), '\n\n', block.error?.format()._errors.join(', '));
+    if (!block.success) {
+      throw Error('Mailformed response');
+    }
+    if (!block.data.exist) {
+      throw Error('Block is out of scope');
+    }
+    return block.data.block;
   }
 }
 
