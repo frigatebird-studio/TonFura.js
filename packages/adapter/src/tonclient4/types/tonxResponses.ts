@@ -191,3 +191,14 @@ type Transaction = {
 export type GetTransactionsResponse = {
   result: Transaction[]
 }
+
+export type RunGetMethodResponse = {
+  result: {
+    "@type": string
+    gas_used: number
+    stack: [string, string][]
+    exit_code: number
+    "@extra": string
+    result_raw?: string // todo we don't have result_raw yet for run_get_method
+  }
+}

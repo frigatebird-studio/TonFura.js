@@ -1,4 +1,4 @@
-import { Address, Transaction } from '@ton/core';
+import { Address, TupleItem } from '@ton/core';
 import { version } from "../../package.json";
 import { getJsonRpcUrl, getRestUrl, sendRpcArray } from './utils'
 import {
@@ -8,7 +8,8 @@ import {
   blockCodec,
   SeqnoSet,
   accountCodec,
-  accountTransactionsCodec
+  accountTransactionsCodec,
+  runMethodCodec,
 } from './types'
 import {
   convertLastBlock,
@@ -16,6 +17,7 @@ import {
   convertGetBlock,
   convertGetAccount,
   convertGetAccountTransactions,
+  convertRunMethod,
 } from './converters'
 
 type Network = "mainnet" | "testnet";
@@ -154,6 +156,33 @@ class TonClient4Adapter {
     }
 
     return transactions.data;
+  }
+
+  /**
+     * Execute run method
+     * @param seqno block sequence number
+     * @param address account address
+     * @param name method name
+     * @param args method arguments
+     * @returns method result
+     */
+  async runMethod(seqno: number, address: Address, name: string, args?: TupleItem[]) {
+
+    // todo: we don't support to use seqno to run get method
+    const params = {
+      address: address.toString(),
+      method: name,
+      stack: args || [],
+    }
+    const data = await this.sendRpc('runGetMethod', params);
+    await new Promise((r) => setTimeout(r, 1000));
+    const accountData = await this.getAccount(seqno, address);
+    const res = convertRunMethod(data, accountData);
+    let runMethod = runMethodCodec.safeParse(res);
+    if (!runMethod.success) {
+      throw Error('Mailformed response');
+    }
+    return runMethod.data;
   }
 }
 
