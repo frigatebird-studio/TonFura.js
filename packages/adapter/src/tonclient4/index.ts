@@ -1,19 +1,21 @@
-import { Address } from '@ton/core';
+import { Address, Transaction } from '@ton/core';
 import { version } from "../../package.json";
 import { getJsonRpcUrl, getRestUrl, sendRpcArray } from './utils'
-import { 
+import {
   lastBlockCodec,
   ShardsResponse,
   GetBlockTransactionsResponse,
   blockCodec,
   SeqnoSet,
   accountCodec,
+  accountTransactionsCodec
 } from './types'
 import {
   convertLastBlock,
   convertGetBlockTransactionsInputs,
   convertGetBlock,
   convertGetAccount,
+  convertGetAccountTransactions,
 } from './converters'
 
 type Network = "mainnet" | "testnet";
@@ -98,7 +100,7 @@ class TonClient4Adapter {
     const transactionsData = await sendRpcArray<SeqnoSet, GetBlockTransactionsResponse>(this.sendRpc.bind(this), inputs);
     const result = convertGetBlock(transactionsData);
 
-    
+
     let block = blockCodec.safeParse(result);
     if (!block.success) {
       throw Error('Mailformed response');
@@ -122,9 +124,36 @@ class TonClient4Adapter {
     const result = convertGetAccount(data);
     let account = accountCodec.safeParse(result);
     if (!account.success) {
-        throw Error('Mailformed response');
+      throw Error('Mailformed response');
     }
     return account.data;
+  }
+
+  /**
+     * Load unparsed account transactions
+     * @param address address
+     * @param lt last transaction lt
+     * @param hash last transaction hash
+     * @returns unparsed transactions
+     */
+  async getAccountTransactions(address: Address, lt: bigint, hash: Buffer) {
+    const params = {
+      account: address.toString(),
+      end_lt: Number(lt),
+      // we don't know the start lt
+      // start_lt: 46896908000041 
+      sort: "DESC",
+    }
+    const data = await this.sendRpc('getTransactions', params);
+
+
+    const result = convertGetAccountTransactions(data);
+    let transactions = accountTransactionsCodec.safeParse(result);
+    if (!transactions.success) {
+      throw Error('Mailformed response');
+    }
+
+    return transactions.data;
   }
 }
 
