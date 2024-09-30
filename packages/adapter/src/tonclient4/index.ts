@@ -1,4 +1,4 @@
-import { Address, TupleItem } from '@ton/core';
+import { Address, Contract, openContract, StateInit, TupleItem } from "@ton/core";
 import { version } from "../../package.json";
 import { getJsonRpcUrl, getRestUrl, sendRpcArray } from './utils'
 import {
@@ -21,6 +21,8 @@ import {
   convertRunMethod,
   convertSendMessage,
 } from './converters'
+
+import { createProvider } from './createProvider';
 
 type Network = "mainnet" | "testnet";
 
@@ -200,7 +202,50 @@ class TonClient4Adapter {
         throw Error('Mailformed response');
     }
     return { status: res.data.status };
+  }
+
+  /**
+     * Open smart contract
+     * @param contract contract
+     * @returns opened contract
+     */
+  open<T extends Contract>(contract: T) {
+    
+    return openContract<T>(contract, (args) => createProvider(this, null, args.address, args.init));
+  }
+
+  /**
+   * Open smart contract
+   * @param block block number
+   * @param contract contract
+   * @returns opened contract
+   */
+  openAt<T extends Contract>(block: number, contract: T) {
+    return openContract<T>(contract, (args) => createProvider(this, block, args.address, args.init));
+  }
+
+  /**
+   * Create provider
+   * @param address address
+   * @param init optional init data
+   * @returns provider
+   */
+  provider(address: Address, init?: StateInit | null) {
+    return createProvider(this, null, address, init ?? null);
+  }
+
+  /**
+   * Create provider at specified block number
+   * @param block block number
+   * @param address address
+   * @param init optional init data
+   * @returns provider
+   */
+  providerAt(block: number, address: Address, init?: StateInit | null) {
+    return createProvider(this, block, address, init ?? null);
+  }
 }
-}
+
+
 
 export default TonClient4Adapter;
