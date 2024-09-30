@@ -11,6 +11,7 @@ import {
   accountTransactionsCodec,
   runMethodCodec,
   sendCodec,
+  configCodec,
 } from './types'
 import {
   convertLastBlock,
@@ -20,6 +21,7 @@ import {
   convertGetAccountTransactions,
   convertRunMethod,
   convertSendMessage,
+  convertGetConfig,
 } from './converters'
 
 import { createProvider } from './createProvider';
@@ -160,6 +162,32 @@ class TonClient4Adapter {
     }
 
     return transactions.data;
+  }
+
+  /**
+     * Get network config
+     * @param seqno block sequence number
+     * @param ids optional config ids
+     * @returns network config
+     */
+  async getConfig(seqno: number, ids?: number[]) {
+    const urlQuery: { 
+      seqno: number; 
+      config_id?: number // todo our api doesn't support multiple config ids
+    } = {
+      seqno,
+    }
+    if(ids && ids.length > 0) {
+      urlQuery.config_id = ids[0]; 
+    }
+
+    const data = await this.sendRest('getConfigParam/', 'GET', urlQuery);
+    const result = convertGetConfig(data);
+    const config = configCodec.safeParse(result);
+    if (!config.success) {
+        throw Error('Mailformed response');
+    }
+    return config.data;
   }
 
   /**

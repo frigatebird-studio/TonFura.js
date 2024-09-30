@@ -209,3 +209,14 @@ export type SendMessageResponse = {
     "@type": string 
   }
 }
+
+export type GetConfigParamResponse = {
+  result: {
+    "@type": string
+    config: {
+      "@type": string
+      bytes: string
+    }
+    "@extra": string
+  }
+}
