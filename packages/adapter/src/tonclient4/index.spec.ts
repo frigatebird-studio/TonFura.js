@@ -370,7 +370,8 @@ describe('TonClient4Adapter', () => {
       }
     });
 
-    expect(global.fetch).toHaveBeenCalledWith(`${tonClient.getRestEndpoint("getConfigParam/")}?seqno=${seqno}`, {
+    // expect(global.fetch).toHaveBeenCalledWith(`${tonClient.getRestEndpoint("getConfigParam")}?seqno=${seqno}`, {
+    expect(global.fetch).toHaveBeenCalledWith(`https://${network}-rpc.tonxapi.com/v2/api/getConfigParam/${apiKey}?seqno=${seqno}`, {
       method: 'GET',
       headers: {
       'Content-Type': 'application/json',

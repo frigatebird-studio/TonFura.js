@@ -181,7 +181,7 @@ class TonClient4Adapter {
       urlQuery.config_id = ids[0]; 
     }
 
-    const data = await this.sendRest('getConfigParam/', 'GET', urlQuery);
+    const data = await this.sendRest('getConfigParam', 'GET', urlQuery);
     const result = convertGetConfig(data);
     const config = configCodec.safeParse(result);
     if (!config.success) {
