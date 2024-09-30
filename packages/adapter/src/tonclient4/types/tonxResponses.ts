@@ -202,3 +202,10 @@ export type RunGetMethodResponse = {
     result_raw?: string // todo we don't have result_raw yet for run_get_method
   }
 }
+
+export type SendMessageResponse = {
+  result: {
+    "@extra": string
+    "@type": string 
+  }
+}

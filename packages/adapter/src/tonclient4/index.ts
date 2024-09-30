@@ -10,6 +10,7 @@ import {
   accountCodec,
   accountTransactionsCodec,
   runMethodCodec,
+  sendCodec,
 } from './types'
 import {
   convertLastBlock,
@@ -18,6 +19,7 @@ import {
   convertGetAccount,
   convertGetAccountTransactions,
   convertRunMethod,
+  convertSendMessage,
 } from './converters'
 
 type Network = "mainnet" | "testnet";
@@ -184,6 +186,21 @@ class TonClient4Adapter {
     }
     return runMethod.data;
   }
+
+  /**
+     * Send external message
+     * @param message message boc
+     * @returns message status
+     */
+  async sendMessage(message: Buffer) {
+    const res = await this.sendRpc('sendMessage', { boc: message.toString('base64') });
+    const data = convertSendMessage(res);
+    let send = sendCodec.safeParse(data);
+    if (!send.success) {
+        throw Error('Mailformed response');
+    }
+    return { status: res.data.status };
+}
 }
 
 export default TonClient4Adapter;
