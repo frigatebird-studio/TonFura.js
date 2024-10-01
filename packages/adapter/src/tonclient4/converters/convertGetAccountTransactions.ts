@@ -2,7 +2,7 @@ import { GetTransactionsResponse, AccountTransactions, Message, CommonMessageInf
 import { convertHexShardToSignedNumberStr, convertRawAddressToDecimalBigInt, decodeBase64ToDecimal, decodeBase64ToUnit8Array } from '../utils'
 import { Address, ExternalAddress } from '@ton/core';
 
-const getMessagaeType = (message: {
+const getMessageType = (message: {
   ihr_disabled: boolean;
   createdLt?: BigInt;
 }) => {
@@ -20,7 +20,7 @@ const getMessagaeType = (message: {
 
 
 function getMessageInfo(message: Message): CommonMessageInfo {
-  const type = getMessagaeType(message);
+  const type = getMessageType(message);
 
   if (type === 'internal') {
     return {
