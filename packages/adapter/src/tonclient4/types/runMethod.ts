@@ -51,7 +51,6 @@ export const runMethodCodec = z.object({
   exitCode: z.number(),
 
   result: z.array(TupleItemSchema),
-  resultV2: z.array(z.tuple([z.string(), z.string()])),
   // resultRaw: z.union([z.string(), z.null()]),  
   resultRaw: z.undefined(), // todo we don't have such data
   reader: z.instanceof(TupleReader).optional(),

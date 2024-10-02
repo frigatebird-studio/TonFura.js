@@ -8,7 +8,6 @@ export function convertRunMethod(data: RunGetMethodResponse, accountData: Accoun
   return {
     exitCode: data.result.exit_code,
     result: resultTuple, // todo we don't have such data
-    resultV2: data.result.stack,
     resultRaw: undefined, // todo we don't have such data
     reader, // todo we don't have such data
     block: accountData.block,

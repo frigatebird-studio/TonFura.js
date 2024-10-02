@@ -92,7 +92,6 @@ export function convertGetAccountTransactions(data: GetTransactionsResponse): Ac
         endStatus: transaction.end_status as any,
         inMessage: getMessage(transaction.in_msg),
         outMessages: null, // todo should we build boc for dictionary?
-        outMessagesV2: transaction.out_msgs.out_msgs?.map(getMessage),
         totalFees: {
           coins: BigInt(transaction.total_fees),
           other: undefined // todo we don't have other for other currencies
@@ -104,7 +103,6 @@ export function convertGetAccountTransactions(data: GetTransactionsResponse): Ac
         description: transaction.description, // todo description seems different
         raw: null, // todo we don't have raw Cell
         hash: () => decodeBase64ToUnit8Array(transaction.hash), // to check? we don't have raw so we cannot do () => raw.hash()
-        hashV2: transaction.hash,
       }
     }
   })

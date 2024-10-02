@@ -75,7 +75,6 @@ const transactionCodec = z.object({
   inMessage: messageCodec.optional(),
   // outMessages: z.record(z.number(), messageCodec), // dictionary ??
   outMessages: z.null(), // dictionary ??
-  outMessagesV2: z.array(messageCodec).optional(),
   totalFees: z.object({
     coins: z.bigint(),
     other: z.map(z.number(), z.bigint()).optional()
@@ -91,7 +90,6 @@ const transactionCodec = z.object({
   // raw: z.instanceof(Cell), // todo we don't have raw Cell
   raw: z.null(),
   hash: z.function().returns(z.instanceof(Uint8Array)),
-  hashV2: z.string(),
 });
 
 
