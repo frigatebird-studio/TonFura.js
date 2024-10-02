@@ -1,4 +1,4 @@
-import { Address, TupleItem } from '@ton/core';
+import { Address, Contract, openContract, StateInit, TupleItem } from "@ton/core";
 import { version } from "../../package.json";
 import { getJsonRpcUrl, getRestUrl, sendRpcArray } from './utils'
 import {
@@ -10,6 +10,8 @@ import {
   accountCodec,
   accountTransactionsCodec,
   runMethodCodec,
+  sendCodec,
+  configCodec,
 } from './types'
 import {
   convertLastBlock,
@@ -18,7 +20,11 @@ import {
   convertGetAccount,
   convertGetAccountTransactions,
   convertRunMethod,
+  convertSendMessage,
+  convertGetConfig,
 } from './converters'
+
+import { createProvider } from './createProvider';
 
 type Network = "mainnet" | "testnet";
 
@@ -159,6 +165,32 @@ class TonClient4Adapter {
   }
 
   /**
+     * Get network config
+     * @param seqno block sequence number
+     * @param ids optional config ids
+     * @returns network config
+     */
+  async getConfig(seqno: number, ids?: number[]) {
+    const urlQuery: { 
+      seqno: number; 
+      config_id?: number // todo our api doesn't support multiple config ids
+    } = {
+      seqno,
+    }
+    if(ids && ids.length > 0) {
+      urlQuery.config_id = ids[0]; 
+    }
+
+    const data = await this.sendRest('getConfigParam', 'GET', urlQuery);
+    const result = convertGetConfig(data);
+    const config = configCodec.safeParse(result);
+    if (!config.success) {
+        throw Error('Mailformed response');
+    }
+    return config.data;
+  }
+
+  /**
      * Execute run method
      * @param seqno block sequence number
      * @param address account address
@@ -184,6 +216,64 @@ class TonClient4Adapter {
     }
     return runMethod.data;
   }
+
+  /**
+     * Send external message
+     * @param message message boc
+     * @returns message status
+     */
+  async sendMessage(message: Buffer) {
+    const res = await this.sendRpc('sendMessage', { boc: message.toString('base64') });
+    const data = convertSendMessage(res);
+    let send = sendCodec.safeParse(data);
+    if (!send.success) {
+        throw Error('Mailformed response');
+    }
+    return { status: res.data.status };
+  }
+
+  /**
+     * Open smart contract
+     * @param contract contract
+     * @returns opened contract
+     */
+  open<T extends Contract>(contract: T) {
+    
+    return openContract<T>(contract, (args) => createProvider(this, null, args.address, args.init));
+  }
+
+  /**
+   * Open smart contract
+   * @param block block number
+   * @param contract contract
+   * @returns opened contract
+   */
+  openAt<T extends Contract>(block: number, contract: T) {
+    return openContract<T>(contract, (args) => createProvider(this, block, args.address, args.init));
+  }
+
+  /**
+   * Create provider
+   * @param address address
+   * @param init optional init data
+   * @returns provider
+   */
+  provider(address: Address, init?: StateInit | null) {
+    return createProvider(this, null, address, init ?? null);
+  }
+
+  /**
+   * Create provider at specified block number
+   * @param block block number
+   * @param address address
+   * @param init optional init data
+   * @returns provider
+   */
+  providerAt(block: number, address: Address, init?: StateInit | null) {
+    return createProvider(this, block, address, init ?? null);
+  }
 }
+
+
 
 export default TonClient4Adapter;

@@ -339,6 +339,46 @@ describe('TonClient4Adapter', () => {
 
     await expect(tonClient.getAccount(seqno, address)).rejects.toThrow('Mailformed response');
   });
+
+  it('should get config', async () => {
+    const seqno = 123;
+    const mockResponse = {
+      id: 0,
+      jsonrpc: "2.0",
+      result: {
+        config: {
+          bytes: "value0asdasd3e",
+        },
+      },
+    };
+
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(mockResponse),
+      })
+    ) as jest.Mock;
+
+    const config = await tonClient.getConfig(seqno);
+
+    expect(config).toEqual({
+      config: {
+        cell: "value0asdasd3e",
+        address: "", // todo we don't have such data
+        globalBalance: {
+          coins: "" // todo we don't have such data
+        }
+      }
+    });
+
+    // expect(global.fetch).toHaveBeenCalledWith(`${tonClient.getRestEndpoint("getConfigParam")}?seqno=${seqno}`, {
+    expect(global.fetch).toHaveBeenCalledWith(`https://${network}-rpc.tonxapi.com/v2/api/getConfigParam/${apiKey}?seqno=${seqno}`, {
+      method: 'GET',
+      headers: {
+      'Content-Type': 'application/json',
+      },
+    });
+    
+});
 });
 
 describe('convertHexShardToSignedNumberStr', () => {

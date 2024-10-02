@@ -202,3 +202,21 @@ export type RunGetMethodResponse = {
     result_raw?: string // todo we don't have result_raw yet for run_get_method
   }
 }
+
+export type SendMessageResponse = {
+  result: {
+    "@extra": string
+    "@type": string 
+  }
+}
+
+export type GetConfigParamResponse = {
+  result: {
+    "@type": string
+    config: {
+      "@type": string
+      bytes: string
+    }
+    "@extra": string
+  }
+}
