@@ -1,4 +1,4 @@
-import { Address, Contract, openContract, StateInit, TupleItem, Transaction, Cell, loadTransaction  } from "@ton/core";
+import { Address, Contract, openContract, StateInit, TupleItem, Transaction, Cell, loadTransaction, serializeTuple, parseTuple, TupleReader  } from "@ton/core";
 import { version } from "../../package.json";
 import { getJsonRpcUrl, getRestUrl, getTonhubDomain, sendRpcArray, toUrlSafe } from './utils'
 import {
@@ -146,10 +146,17 @@ class TonClient4Adapter {
      * @returns account info
      */
   async getAccount(seqno: number, address: Address) {
-    const data = await this.sendRpc('getAddressInformation', {
-      address: address.toString(),
-    });
-    const result = convertGetAccount(data);
+    /*
+    * This is the original tonx api call that was replaced by tonhub api call
+    * To support the tonclient4 interface get account by seqNo, we need to support it from our tonx api response in future
+    */
+    // const data = await this.sendRpc('getAddressInformation', {
+    //   address: address.toString(),
+    // });
+    // const result = convertGetAccount(data);
+
+    const result = await this.sendTonhubRequest('/block/' + seqno + '/' + address.toString({ urlSafe: true }), 'GET');
+    
     let account = accountCodec.safeParse(result);
     if (!account.success) {
       throw Error('Mailformed response');
@@ -262,22 +269,38 @@ class TonClient4Adapter {
      * @returns method result
      */
   async runMethod(seqno: number, address: Address, name: string, args?: TupleItem[]) {
+    const tail = args && args.length > 0 ? '/' + toUrlSafe(serializeTuple(args).toBoc({ idx: false, crc32: false }).toString('base64')) : '';
+    const path = '/block/' + seqno + '/' + address.toString({ urlSafe: true }) + '/run/' + encodeURIComponent(name) + tail;
+    const res = await this.sendTonhubRequest(path, 'GET');
 
-    // todo: we don't support to use seqno to run get method
-    const params = {
-      address: address.toString(),
-      method: name,
-      stack: args || [],
-    }
-    const data = await this.sendRpc('runGetMethod', params);
-    await new Promise((r) => setTimeout(r, 1000));
-    const accountData = await this.getAccount(seqno, address);
-    const res = convertRunMethod(data, accountData);
-    let runMethod = runMethodCodec.safeParse(res);
+    /*
+    * This is the original tonx api call that was replaced by tonhub api call
+    * To support the tonclient4 interface, we need to support returning boc format from our tonx api response in future
+    */
+    // // todo: we don't support to use seqno to run get method
+    // const params = {
+    //   address: address.toString(),
+    //   method: name,
+    //   stack: args || [],
+    // }
+    // const data = await this.sendRpc('runGetMethod', params);
+    // await new Promise((r) => setTimeout(r, 1000));
+    // const accountData = await this.getAccount(seqno, address);
+    // const res = convertRunMethod(data, accountData);
+
+    const runMethod = runMethodCodec.safeParse(res);
     if (!runMethod.success) {
       throw Error('Mailformed response');
     }
-    return runMethod.data;
+    const resultTuple = runMethod.data.resultRaw ? parseTuple(Cell.fromBoc(Buffer.from(runMethod.data.resultRaw, 'base64'))[0]) : [];
+    return {
+      exitCode: runMethod.data.exitCode,
+      result: resultTuple,
+      resultRaw: runMethod.data.resultRaw,
+      block: runMethod.data.block,
+      shardBlock: runMethod.data.shardBlock,
+      reader: new TupleReader(resultTuple),
+    };
   }
 
   /**
