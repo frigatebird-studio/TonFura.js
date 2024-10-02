@@ -140,6 +140,24 @@ class TonClient4Adapter {
   }
 
   /**
+     * Get block info by unix timestamp
+     * @param ts unix timestamp
+     * @returns block info
+     */
+  async getBlockByUtime(ts: number) {
+    // tonx shard api doesn't support get by utime
+    const result = await this.sendTonhubRequest('/block/utime/' + ts, 'GET');
+    let block = blockCodec.safeParse(result);
+    if (!block.success) {
+        throw Error('Mailformed response');
+    }
+    if (!block.data.exist) {
+        throw Error('Block is out of scope');
+    }
+    return block.data.block;
+}
+
+  /**
      * Get block info by seqno
      * @param seqno block sequence number
      * @param address account address
