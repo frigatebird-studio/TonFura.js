@@ -15,17 +15,15 @@ export function convertGetBlockTransactionsInputs(seqno: number, data: ShardsRes
         shard: "8000000000000000",
         seqno,
       } 
-    },
-    ...data.result.shards.map(it => {
-      return {
-        method: "getBlockTransactions",
-        params: {
-          workchain: it.workchain,
-          shard: it.shard,
-          seqno: it.seqno,
-        }
+    },    
+    ...data.result.shards.map(({ workchain, shard, seqno }) => ({
+      method: "getBlockTransactions",
+      params: {
+        workchain,
+        shard,
+        seqno,
       }
-    }),
+    })),
   ]
 }
 
