@@ -116,10 +116,16 @@ class TonClient4Adapter {
      * @returns block info
      */
   async getBlock(seqno: number) {
-    const data: ShardsResponse = await this.sendRest('shards', 'GET', { seqno })
-    const inputs = convertGetBlockTransactionsInputs(seqno, data);
-    const transactionsData = await sendRpcArray<SeqnoSet, GetBlockTransactionsResponse>(this.sendRpc.bind(this), inputs);
-    const result = convertGetBlock(transactionsData);
+    /*
+    * This is the original tonx api call that was replaced by tonhub api call
+    * We can use our tonx api after the shards api has been fixed TON-2746
+    */
+    // const data: ShardsResponse = await this.sendRest('shards', 'GET', { seqno })
+    // const inputs = convertGetBlockTransactionsInputs(seqno, data);
+    // const transactionsData = await sendRpcArray<SeqnoSet, GetBlockTransactionsResponse>(this.sendRpc.bind(this), inputs);
+    // const result = convertGetBlock(transactionsData);
+
+    const result = await this.sendTonhubRequest('/block/' + seqno, 'GET');
 
 
     let block = blockCodec.safeParse(result);
@@ -173,7 +179,7 @@ class TonClient4Adapter {
     //   // start_lt: 46896908000041 
     //   sort: "DESC",
     // }
-    // const data = await this.sendRpc('getTransactions', params);
+    // const data1 = await this.sendRpc('getTransactions', params);
 
     // const result = convertGetAccountTransactions(data);
     // let transactions = accountTransactionsCodec.safeParse(result);
