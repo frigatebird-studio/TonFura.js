@@ -106,3 +106,16 @@ export const accountTransactionsCodec = z.array(z.object({
 }));
 
 export type AccountTransactions = z.infer<typeof accountTransactionsCodec>;
+
+const blocksCodec = z.array(z.object({
+  workchain: z.number(),
+  seqno: z.number(),
+  shard: z.string(),
+  rootHash: z.string(),
+  fileHash: z.string()
+}));
+
+export const transactionsCodec = z.object({
+  blocks: blocksCodec,
+  boc: z.string()
+});

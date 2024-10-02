@@ -1,6 +1,6 @@
-import { Address, Contract, openContract, StateInit, TupleItem } from "@ton/core";
+import { Address, Contract, openContract, StateInit, TupleItem, Transaction, Cell, loadTransaction  } from "@ton/core";
 import { version } from "../../package.json";
-import { getJsonRpcUrl, getRestUrl, sendRpcArray } from './utils'
+import { getJsonRpcUrl, getRestUrl, getTonhubDomain, sendRpcArray, toUrlSafe } from './utils'
 import {
   lastBlockCodec,
   ShardsResponse,
@@ -12,6 +12,8 @@ import {
   runMethodCodec,
   sendCodec,
   configCodec,
+  transactionsCodec,
+  Network,
 } from './types'
 import {
   convertLastBlock,
@@ -25,8 +27,6 @@ import {
 } from './converters'
 
 import { createProvider } from './createProvider';
-
-type Network = "mainnet" | "testnet";
 
 class TonClient4Adapter {
   endpoint: string
@@ -72,6 +72,19 @@ class TonClient4Adapter {
     if (method === 'GET' && params) {
       url += '?' + new URLSearchParams(params).toString();
     }
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: method !== 'GET' ? JSON.stringify(params) : undefined,
+    });
+    return response.json();
+  }
+
+  async sendTonhubRequest(path: string, method: 'GET' | 'POST' | 'UPDATE' | 'DELETE', params?: any) {
+    const endpoint = getTonhubDomain(this.network);
+    let url = `${endpoint}${path}`
     const response = await fetch(url, {
       method,
       headers: {
@@ -145,23 +158,51 @@ class TonClient4Adapter {
      * @returns unparsed transactions
      */
   async getAccountTransactions(address: Address, lt: bigint, hash: Buffer) {
-    const params = {
-      account: address.toString(),
-      end_lt: Number(lt),
-      // we don't know the start lt
-      // start_lt: 46896908000041 
-      sort: "DESC",
-    }
-    const data = await this.sendRpc('getTransactions', params);
 
+    const path = '/account/' + address.toString({ urlSafe: true }) + '/tx/' + lt.toString(10) + '/' + toUrlSafe(hash.toString('base64'));
+    const tonhubData = await this.sendTonhubRequest(path, 'GET');   
 
-    const result = convertGetAccountTransactions(data);
-    let transactions = accountTransactionsCodec.safeParse(result);
+    /*
+    * This is the original tonx api call that was replaced by tonhub api call
+    * To support the tonclient4 interface (raw: Cell, outMessages: Dictionary, etc...), we need to build their boc format from our tonx api response in future
+    */
+    // const params = {
+    //   account: address.toString(),
+    //   end_lt: Number(lt),
+    //   // we don't know the start lt
+    //   // start_lt: 46896908000041 
+    //   sort: "DESC",
+    // }
+    // const data = await this.sendRpc('getTransactions', params);
+
+    // const result = convertGetAccountTransactions(data);
+    // let transactions = accountTransactionsCodec.safeParse(result);
+
+    let transactions = transactionsCodec.safeParse(tonhubData);
+
     if (!transactions.success) {
       throw Error('Mailformed response');
     }
 
-    return transactions.data;
+    const data = transactions.data;
+    let tx: {
+      block: {
+          workchain: number;
+          seqno: number;
+          shard: string;
+          rootHash: string;
+          fileHash: string;
+      },
+      tx: Transaction
+    }[] = [];
+    let cells = Cell.fromBoc(Buffer.from(data.boc, 'base64'));
+    for (let i = 0; i < data.blocks.length; i++) {
+        tx.push({
+            block: data.blocks[i],
+            tx: loadTransaction(cells[i].beginParse())
+        });
+    }
+    return tx;
   }
 
   /**
