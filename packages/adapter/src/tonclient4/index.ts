@@ -14,6 +14,7 @@ import {
   configCodec,
   transactionsCodec,
   Network,
+  Config,
 } from './types'
 import {
   convertLastBlock,
@@ -218,18 +219,33 @@ class TonClient4Adapter {
      * @returns network config
      */
   async getConfig(seqno: number, ids?: number[]) {
-    const urlQuery: { 
-      seqno: number; 
-      config_id?: number // todo our api doesn't support multiple config ids
-    } = {
-      seqno,
+    let tail = '';
+    if (ids && ids.length > 0) {
+        tail = '/' + [...ids].sort().join(',');
     }
-    if(ids && ids.length > 0) {
-      urlQuery.config_id = ids[0]; 
-    }
+    const result = await this.sendTonhubRequest('/block/' + seqno + '/config' + tail, 'GET');
 
-    const data = await this.sendRest('getConfigParam', 'GET', urlQuery);
-    const result = convertGetConfig(data);
+    /*
+    * This is the original tonx api call that was replaced by tonhub api call
+    * To support the tonclient4 interface (address, globalBalance), we need to support format from our tonx api response in future
+    */
+    // const urlQuery: { 
+    //   seqno: number; 
+    //   config_id?: number // todo our api doesn't support multiple config ids
+    // } = {
+    //   seqno,
+    // }
+
+    // let result: Config;
+    // if(ids && ids.length > 0) {
+    //   urlQuery.config_id = ids[0]; 
+    //   const data = await this.sendRest('getConfigParam', 'GET', urlQuery);
+    //   result = convertGetConfig(data);
+    // } else {
+    //   const data = await this.sendRest('getConfigAll', 'GET', urlQuery);
+    //   result = convertGetConfig(data);
+    // }
+
     const config = configCodec.safeParse(result);
     if (!config.success) {
         throw Error('Mailformed response');
