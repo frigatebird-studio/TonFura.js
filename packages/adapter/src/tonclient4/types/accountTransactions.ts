@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Address, ExternalAddress, Cell } from '@ton/core';
 
-const accountStatusCodec = z.enum(['uninitialized', 'frozen', 'active', 'non-existing']);
+export const accountStatusCodec = z.enum(['uninitialized', 'frozen', 'active', 'non-existing']);
 
 const simpleLibraryCodec = z.object({
   public: z.boolean(),
@@ -107,7 +107,7 @@ export const accountTransactionsCodec = z.array(z.object({
 
 export type AccountTransactions = z.infer<typeof accountTransactionsCodec>;
 
-const blocksCodec = z.array(z.object({
+export const blocksCodec = z.array(z.object({
   workchain: z.number(),
   seqno: z.number(),
   shard: z.string(),

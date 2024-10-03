@@ -4,6 +4,7 @@ export * from './lastBlock';
 export * from './block';
 export * from './account';
 export * from './accountTransactions';
+export * from './parsedTransactions';
 export * from './runMethod';
 export * from './send';
 export * from './config';

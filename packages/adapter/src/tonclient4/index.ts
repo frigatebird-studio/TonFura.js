@@ -17,6 +17,8 @@ import {
   Config,
   accountLiteCodec,
   changedCodec,
+  parsedTransactionsCodec,
+  ParsedTransactions,
 } from './types'
 import {
   convertLastBlock,
@@ -24,6 +26,7 @@ import {
   convertGetBlock,
   convertGetAccount,
   convertGetAccountTransactions,
+  convertGetAccountTransactionsParsed,
   convertRunMethod,
   convertSendMessage,
   convertGetConfig,
@@ -246,7 +249,7 @@ class TonClient4Adapter {
   async getAccountTransactions(address: Address, lt: bigint, hash: Buffer) {
 
     const path = '/account/' + address.toString({ urlSafe: true }) + '/tx/' + lt.toString(10) + '/' + toUrlSafe(hash.toString('base64'));
-    const tonhubData = await this.sendTonhubRequest(path, 'GET');   
+    const tonhubData = await this.sendTonhubRequest(path, 'GET');
 
     /*
     * This is the original tonx api call that was replaced by tonhub api call
@@ -290,6 +293,41 @@ class TonClient4Adapter {
     }
     return tx;
   }
+
+  /**
+     * Load parsed account transactions
+     * @param address address
+     * @param lt last transaction lt
+     * @param hash last transaction hash
+     * @param count number of transactions to load
+     * @returns parsed transactions
+     */
+  async getAccountTransactionsParsed(address: Address, lt: bigint, hash: Buffer, count: number = 20) {
+    const path = '/account/' + address.toString({ urlSafe: true }) + '/tx/parsed/' + lt.toString(10) + '/' + toUrlSafe(hash.toString('base64')) + '?' + new URLSearchParams({ count: count.toString() }).toString();
+    
+    const tonhubData = await this.sendTonhubRequest(path, 'GET');
+
+    /*
+    * This is the original tonx api call that was replaced by tonhub api call
+    * To support the tonclient4 interface, we need to provide missing data in our tonx api response in future
+    */
+    // const params = {
+    //   account: address.toString(),
+    //   end_lt: Number(lt),
+    //   sort: "DESC",
+    //   limit: count,
+    // }
+    // const data = await this.sendRpc('getTransactions', params);
+    // const result = convertGetAccountTransactionsParsed(data);
+
+    const parsedTransactionsRes = parsedTransactionsCodec.safeParse(tonhubData);
+
+    if (!parsedTransactionsRes.success) {
+        throw Error('Mailformed response');
+    }
+
+    return parsedTransactionsRes.data as ParsedTransactions;
+}
 
   /**
      * Get network config

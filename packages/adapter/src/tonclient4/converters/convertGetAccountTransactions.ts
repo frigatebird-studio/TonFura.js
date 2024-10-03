@@ -1,4 +1,4 @@
-import { GetTransactionsResponse, AccountTransactions, Message, CommonMessageInfo } from '../types'
+import { GetTransactionsResponse, AccountTransactions, Message, CommonMessageInfo, ParsedTransactions } from '../types'
 import { convertHexShardToSignedNumberStr, convertRawAddressToDecimalBigInt, decodeBase64ToDecimal, decodeBase64ToUnit8Array } from '../utils'
 import { Address, ExternalAddress } from '@ton/core';
 
@@ -36,9 +36,10 @@ function getMessageInfo(message: Message): CommonMessageInfo {
       },
       ihrFee: BigInt(message.ihr_fee),
       forwardFee: BigInt(message.fwd_fee),
+      fwdFee: BigInt(message.fwd_fee).toString(),
       createdLt: BigInt(message.created_lt),
       createdAt: Number(message.created_at)
-    }
+    } as any
   }
   if (type === 'external-in') {
     return {
@@ -106,4 +107,57 @@ export function convertGetAccountTransactions(data: GetTransactionsResponse): Ac
       }
     }
   })
+}
+
+export function convertGetAccountTransactionsParsed(data: GetTransactionsResponse): ParsedTransactions {
+  return {
+    blocks: data.result.map(transaction => {
+      return {
+        workchain: transaction.block_ref.workchain,
+        seqno: transaction.block_ref.seqno,
+        shard: convertHexShardToSignedNumberStr(transaction.block_ref.shard),
+        rootHash: "", // todo
+        fileHash: "", // todo
+      }
+    }),
+    transactions: data.result.map(transaction => {
+      return {
+        address: transaction.account,
+        lt: transaction.lt.toString(),
+        hash: transaction.hash,
+        prevTransaction: {
+          lt: transaction.prev_trans_lt,
+          hash: transaction.prev_trans_hash,
+        },
+        time: transaction.now,
+        outMessagesCount: transaction.out_msgs.out_msgs?.length || 0,
+        oldStatus: transaction.orig_status as any,
+        newStatus: transaction.end_status as any,
+        fees: transaction.total_fees.toString(),
+        update: {
+          oldHash: transaction.account_state_hash_before,
+          newHash: transaction.account_state_hash_after,
+        },
+        inMessage: getMessage(transaction.in_msg),
+        outMessages: transaction.out_msgs.out_msgs?.map(getMessage),
+        parsed: {
+          seqno: null, // todo we don't have seqno
+          body: null, // todo we don't have body
+          status: 'success', // todo we don't have status
+          dest: null, // todo we don't have dest
+          kind: 'out', // todo we don't have kind
+          amount: transaction.total_fees.toString(), // todo we don't have amount
+          resolvedAddress: transaction.account,
+          bounced: false, // todo we don't have bounced
+          mentioned: [], // todo we don't have mentioned
+        },
+        operation: {
+          address: "", // todo we don't have address
+          comment: "", // todo we don't have comment
+          items: [], // todo we don't have items
+          op: undefined, // todo we don't have op
+        }
+      } as any
+    }),
+  }
 }
