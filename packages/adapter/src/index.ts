@@ -1,3 +1,4 @@
 import TonWebAdapter from "./tonweb";
 import ToncoreAdapter from "./toncore";
-export { TonWebAdapter, ToncoreAdapter };
+import TonClient4Adapter from "./tonclient4";
+export { TonWebAdapter, ToncoreAdapter, TonClient4Adapter };
