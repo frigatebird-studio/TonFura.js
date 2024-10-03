@@ -1,30 +1,19 @@
 import { Address, Contract, openContract, StateInit, TupleItem, Transaction, Cell, loadTransaction, serializeTuple, parseTuple, TupleReader  } from "@ton/core";
 import { version } from "../../package.json";
-import { getJsonRpcUrl, getRestUrl, getTonhubDomain, sendRpcArray, toUrlSafe } from './utils'
+import { getJsonRpcUrl, getRestUrl, getTonhubDomain, toUrlSafe } from './utils'
 import {
   lastBlockCodec,
-  ShardsResponse,
-  GetBlockTransactionsResponse,
   blockCodec,
-  SeqnoSet,
   accountCodec,
-  accountTransactionsCodec,
   runMethodCodec,
   sendCodec,
   configCodec,
   transactionsCodec,
   Network,
-  Config,
 } from './types'
 import {
   convertLastBlock,
-  convertGetBlockTransactionsInputs,
-  convertGetBlock,
-  convertGetAccount,
-  convertGetAccountTransactions,
-  convertRunMethod,
   convertSendMessage,
-  convertGetConfig,
 } from './converters'
 
 import { createProvider } from './createProvider';
@@ -118,14 +107,8 @@ class TonClient4Adapter {
      */
   async getBlock(seqno: number) {
     /*
-    * This is the original tonx api call that was replaced by tonhub api call
     * We can use our tonx api after the shards api has been fixed TON-2746
     */
-    // const data: ShardsResponse = await this.sendRest('shards', 'GET', { seqno })
-    // const inputs = convertGetBlockTransactionsInputs(seqno, data);
-    // const transactionsData = await sendRpcArray<SeqnoSet, GetBlockTransactionsResponse>(this.sendRpc.bind(this), inputs);
-    // const result = convertGetBlock(transactionsData);
-
     const result = await this.sendTonhubRequest('/block/' + seqno, 'GET');
 
 
@@ -147,14 +130,8 @@ class TonClient4Adapter {
      */
   async getAccount(seqno: number, address: Address) {
     /*
-    * This is the original tonx api call that was replaced by tonhub api call
     * To support the tonclient4 interface get account by seqNo, we need to support it from our tonx api response in future
     */
-    // const data = await this.sendRpc('getAddressInformation', {
-    //   address: address.toString(),
-    // });
-    // const result = convertGetAccount(data);
-
     const result = await this.sendTonhubRequest('/block/' + seqno + '/' + address.toString({ urlSafe: true }), 'GET');
     
     let account = accountCodec.safeParse(result);
@@ -177,21 +154,8 @@ class TonClient4Adapter {
     const tonhubData = await this.sendTonhubRequest(path, 'GET');   
 
     /*
-    * This is the original tonx api call that was replaced by tonhub api call
     * To support the tonclient4 interface (raw: Cell, outMessages: Dictionary, etc...), we need to build their boc format from our tonx api response in future
     */
-    // const params = {
-    //   account: address.toString(),
-    //   end_lt: Number(lt),
-    //   // we don't know the start lt
-    //   // start_lt: 46896908000041 
-    //   sort: "DESC",
-    // }
-    // const data1 = await this.sendRpc('getTransactions', params);
-
-    // const result = convertGetAccountTransactions(data);
-    // let transactions = accountTransactionsCodec.safeParse(result);
-
     let transactions = transactionsCodec.safeParse(tonhubData);
 
     if (!transactions.success) {
@@ -233,25 +197,8 @@ class TonClient4Adapter {
     const result = await this.sendTonhubRequest('/block/' + seqno + '/config' + tail, 'GET');
 
     /*
-    * This is the original tonx api call that was replaced by tonhub api call
     * To support the tonclient4 interface (address, globalBalance), we need to support format from our tonx api response in future
     */
-    // const urlQuery: { 
-    //   seqno: number; 
-    //   config_id?: number // todo our api doesn't support multiple config ids
-    // } = {
-    //   seqno,
-    // }
-
-    // let result: Config;
-    // if(ids && ids.length > 0) {
-    //   urlQuery.config_id = ids[0]; 
-    //   const data = await this.sendRest('getConfigParam', 'GET', urlQuery);
-    //   result = convertGetConfig(data);
-    // } else {
-    //   const data = await this.sendRest('getConfigAll', 'GET', urlQuery);
-    //   result = convertGetConfig(data);
-    // }
 
     const config = configCodec.safeParse(result);
     if (!config.success) {
@@ -269,24 +216,12 @@ class TonClient4Adapter {
      * @returns method result
      */
   async runMethod(seqno: number, address: Address, name: string, args?: TupleItem[]) {
+    /*
+    * To support the tonclient4 interface, we need to support returning boc format from our tonx api response in future
+    */
     const tail = args && args.length > 0 ? '/' + toUrlSafe(serializeTuple(args).toBoc({ idx: false, crc32: false }).toString('base64')) : '';
     const path = '/block/' + seqno + '/' + address.toString({ urlSafe: true }) + '/run/' + encodeURIComponent(name) + tail;
     const res = await this.sendTonhubRequest(path, 'GET');
-
-    /*
-    * This is the original tonx api call that was replaced by tonhub api call
-    * To support the tonclient4 interface, we need to support returning boc format from our tonx api response in future
-    */
-    // // todo: we don't support to use seqno to run get method
-    // const params = {
-    //   address: address.toString(),
-    //   method: name,
-    //   stack: args || [],
-    // }
-    // const data = await this.sendRpc('runGetMethod', params);
-    // await new Promise((r) => setTimeout(r, 1000));
-    // const accountData = await this.getAccount(seqno, address);
-    // const res = convertRunMethod(data, accountData);
 
     const runMethod = runMethodCodec.safeParse(res);
     if (!runMethod.success) {
