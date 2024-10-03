@@ -10,7 +10,6 @@ import {
   configCodec,
   transactionsCodec,
   Network,
-  Config,
   accountLiteCodec,
   changedCodec,
   parsedTransactionsCodec,
@@ -272,18 +271,8 @@ class TonClient4Adapter {
     const tonhubData = await this.sendTonhubRequest(path, 'GET');
 
     /*
-    * This is the original tonx api call that was replaced by tonhub api call
     * To support the tonclient4 interface, we need to provide missing data in our tonx api response in future
     */
-    // const params = {
-    //   account: address.toString(),
-    //   end_lt: Number(lt),
-    //   sort: "DESC",
-    //   limit: count,
-    // }
-    // const data = await this.sendRpc('getTransactions', params);
-    // const result = convertGetAccountTransactionsParsed(data);
-
     const parsedTransactionsRes = parsedTransactionsCodec.safeParse(tonhubData);
 
     if (!parsedTransactionsRes.success) {

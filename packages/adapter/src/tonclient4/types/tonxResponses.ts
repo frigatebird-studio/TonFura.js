@@ -199,7 +199,6 @@ export type RunGetMethodResponse = {
     stack: [string, string][]
     exit_code: number
     "@extra": string
-    result_raw?: string // todo we don't have result_raw yet for run_get_method
   }
 }
 
