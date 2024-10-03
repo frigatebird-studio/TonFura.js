@@ -5,3 +5,5 @@ export * from './convertGetAccountTransactions';
 export * from './convertRunMethod';
 export * from './convertSend';
 export * from './convertGetConfig';
+export * from './convertGetAccountLite';
+export * from './convertIsAccountChanged';

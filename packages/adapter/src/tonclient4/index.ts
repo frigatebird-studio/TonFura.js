@@ -15,6 +15,8 @@ import {
   transactionsCodec,
   Network,
   Config,
+  accountLiteCodec,
+  changedCodec,
 } from './types'
 import {
   convertLastBlock,
@@ -25,6 +27,8 @@ import {
   convertRunMethod,
   convertSendMessage,
   convertGetConfig,
+  convertGetAccountLite,
+  convertIsAccountChanged,
 } from './converters'
 
 import { createProvider } from './createProvider';
@@ -180,6 +184,56 @@ class TonClient4Adapter {
       throw Error('Mailformed response');
     }
     return account.data;
+  }
+
+  /**
+     * Get account lite info (without code and data)
+     * @param seqno block sequence number
+     * @param address account address
+     * @returns account lite info
+     */
+  async getAccountLite(seqno: number, address: Address) {
+    const data = await this.getAccount(seqno, address);
+    const result = convertGetAccountLite(data);
+
+    let account = accountLiteCodec.safeParse(result);
+    if (!account.success) {
+        throw Error('Mailformed response');
+    }
+    
+    return account.data;
+  }
+
+  /**
+     * Check if contract is deployed
+     * @param address addres to check
+     * @returns true if contract is in active state
+     */
+  async isContractDeployed(seqno: number, address: Address) {
+    let account = await this.getAccountLite(seqno, address);
+
+    return account.account.state.type === 'active';
+  }
+
+  /**
+     * Check if account was updated since
+     * @param seqno block sequence number
+     * @param address account address
+     * @param lt account last transaction lt
+     * @returns account change info
+     */
+  async isAccountChanged(seqno: number, address: Address, lt: bigint) {
+    // let res = await this.#axios.get(this.#endpoint + '/block/' + seqno + '/' + address.toString({ urlSafe: true }) + '/changed/' + lt.toString(10), { adapter: this.#adapter, timeout: this.#timeout });
+    const lastBlock = await this.getLastBlock();
+    const beforeAccount = await this.getAccount(seqno, address);
+    const afterAccount = await this.getAccount(lastBlock.last.seqno, address);
+    const result = convertIsAccountChanged(beforeAccount, afterAccount);
+
+    const changed = changedCodec.safeParse(result);
+    if (!changed.success) {
+        throw Error('Mailformed response');
+    }
+    return changed.data;
   }
 
   /**
