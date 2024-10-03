@@ -1,4 +1,4 @@
-import { RpcInputs } from './types';
+import { RpcInputs, Network } from './types';
 
 function getDomain(network: string) {
     return `https://${network}-rpc.tonxapi.com`;
@@ -58,4 +58,27 @@ export function decodeBase64ToUnit8Array(base64Str: string) {
         bytes[i] = binaryString.charCodeAt(i);
     }
     return bytes;
+}
+
+export function toUrlSafe(src: string) {
+    while (src.indexOf('/') >= 0) {
+        src = src.replace('/', '_');
+    }
+    while (src.indexOf('+') >= 0) {
+        src = src.replace('+', '-');
+    }
+    while (src.indexOf('=') >= 0) {
+        src = src.replace('=', '');
+    }
+    return src;
+}
+
+export function getTonhubDomain(network: Network) {
+    if (network === 'mainnet') {
+        return 'https://mainnet-v4.tonhubapi.com';
+    } else if (network === 'testnet') {
+        return 'https://testnet-v4.tonhubapi.com';
+    } else {
+        throw new Error('Invalid network');
+    }
 }

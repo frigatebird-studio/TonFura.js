@@ -149,48 +149,45 @@ export function createProvider(client: TonClient4Adapter, block: number | null, 
           return openContract<T>(contract, (args) => createProvider(client, block, args.address, args.init ?? null));
       },
       async getTransactions(address: Address, lt: bigint, hash: Buffer, limit?: number): Promise<Transaction[]> {
-
-        let hashStr = hash.toString('base64');
-
         // Resolve last
         const useLimit = typeof limit === 'number';
-          if (useLimit && limit <= 0) {
-              return [];
-          }
+        if (useLimit && limit <= 0) {
+            return [];
+        }
 
-          // Load transactions
-          let transactions: Transaction[] = [];
-          do {
-              const txs = await client.getAccountTransactions(address, lt, hash);
+        // Load transactions
+        let transactions: Transaction[] = [];
+        do {
+            const txs = await client.getAccountTransactions(address, lt, hash);
 
-              const firstTx = txs[0].tx;
-              const [firstLt, firstHash] = [firstTx.lt, firstTx.hashV2];
-              const needSkipFirst = transactions.length > 0 && firstLt === lt && firstHash === hashStr;
-              if (needSkipFirst) {
-                  txs.shift();
-              }
+            const firstTx = txs[0].tx;
+            const [firstLt, firstHash] = [firstTx.lt, firstTx.hash()];
+            const needSkipFirst = transactions.length > 0 && firstLt === lt && firstHash.equals(hash);
+            if (needSkipFirst) {
+                txs.shift();
+            }
 
-              if (txs.length === 0) {
-                  break;
-              }
-              const lastTx = txs[txs.length - 1].tx;
-              const [lastLt, lastHash] = [lastTx.lt, lastTx.hashV2];
-              if (lastLt === lt && lastHash === hashStr) {
-                  break;
-              }
+            if (txs.length === 0) {
+                break;
+            }
+            const lastTx = txs[txs.length - 1].tx;
+            const [lastLt, lastHash] = [lastTx.lt, lastTx.hash()];
+            if (lastLt === lt && lastHash.equals(hash)) {
+                break;
+            }
 
-              transactions.push(...txs.map(tx => tx.tx) as any);
-              lt = lastLt;
-              hashStr = lastHash;
-          } while (useLimit && transactions.length < limit);
+            transactions.push(...txs.map(tx => tx.tx));
+            lt = lastLt;
+            hash = lastHash;
+        } while (useLimit && transactions.length < limit);
 
-          // Apply limit
-          if (useLimit) {
-              transactions = transactions.slice(0, limit);
-          }
+        // Apply limit
+        if (useLimit) {
+            transactions = transactions.slice(0, limit);
+        }
 
-          // Return transactions
-          return transactions;
-      }
+        // Return transactions
+        return transactions;
+    }
   }
 }

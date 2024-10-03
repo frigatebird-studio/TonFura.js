@@ -7,3 +7,4 @@ export * from './accountTransactions';
 export * from './runMethod';
 export * from './send';
 export * from './config';
+export * from './network';
