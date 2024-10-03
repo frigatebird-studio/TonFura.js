@@ -202,7 +202,6 @@ class TonClient4Adapter {
      * @returns account change info
      */
   async isAccountChanged(seqno: number, address: Address, lt: bigint) {
-    // let res = await this.#axios.get(this.#endpoint + '/block/' + seqno + '/' + address.toString({ urlSafe: true }) + '/changed/' + lt.toString(10), { adapter: this.#adapter, timeout: this.#timeout });
     const lastBlock = await this.getLastBlock();
     const beforeAccount = await this.getAccount(seqno, address);
     const afterAccount = await this.getAccount(lastBlock.last.seqno, address);
