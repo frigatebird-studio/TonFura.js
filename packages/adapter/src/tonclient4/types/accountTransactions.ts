@@ -1,12 +1,7 @@
 import { z } from 'zod';
-import { Address, ExternalAddress, Cell } from '@ton/core';
+import { Address } from '@ton/core';
 
 export const accountStatusCodec = z.enum(['uninitialized', 'frozen', 'active', 'non-existing']);
-
-const simpleLibraryCodec = z.object({
-  public: z.boolean(),
-  root: z.instanceof(Cell)
-});
 
 const commonMessageInfoCodec = z.union([
   z.object({
@@ -41,19 +36,6 @@ const commonMessageInfoCodec = z.union([
 ]);
 
 export type CommonMessageInfo = z.infer<typeof commonMessageInfoCodec>;
-
-const tickTockCodec = z.object({
-  tick: z.boolean(),
-  tock: z.boolean()
-});
-
-const stateInitCodec = z.object({
-  splitDepth: z.number().optional(),
-  special: tickTockCodec.optional(),
-  code: z.instanceof(Cell).optional(),
-  data: z.instanceof(Cell).optional(),
-  libraries: z.map(z.bigint(), simpleLibraryCodec).optional()
-});
 
 const messageCodec = z.object({
   info: commonMessageInfoCodec,
@@ -91,21 +73,6 @@ const transactionCodec = z.object({
   raw: z.null(),
   hash: z.function().returns(z.instanceof(Uint8Array)),
 });
-
-
-
-export const accountTransactionsCodec = z.array(z.object({
-  block: z.object({
-    workchain: z.number(),
-    seqno: z.number(),
-    shard: z.string(),
-    rootHash: z.string(),
-    fileHash: z.string()
-  }),
-  tx: transactionCodec,
-}));
-
-export type AccountTransactions = z.infer<typeof accountTransactionsCodec>;
 
 export const blocksCodec = z.array(z.object({
   workchain: z.number(),
