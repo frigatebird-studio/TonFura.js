@@ -1,5 +1,7 @@
 import { z } from 'zod';
-import { Address, } from '@ton/core';
+import { Address } from '@ton/core';
+
+export const accountStatusCodec = z.enum(['uninitialized', 'frozen', 'active', 'non-existing']);
 
 const commonMessageInfoCodec = z.union([
   z.object({
@@ -35,7 +37,7 @@ const commonMessageInfoCodec = z.union([
 
 export type CommonMessageInfo = z.infer<typeof commonMessageInfoCodec>;
 
-const blocksCodec = z.array(z.object({
+export const blocksCodec = z.array(z.object({
   workchain: z.number(),
   seqno: z.number(),
   shard: z.string(),

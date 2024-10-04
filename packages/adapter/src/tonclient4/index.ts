@@ -10,10 +10,16 @@ import {
   configCodec,
   transactionsCodec,
   Network,
+  accountLiteCodec,
+  changedCodec,
+  parsedTransactionsCodec,
+  ParsedTransactions,
 } from './types'
 import {
   convertLastBlock,
   convertSendMessage,
+  convertGetAccountLite,
+  convertIsAccountChanged,
 } from './converters'
 
 import { createProvider } from './createProvider';
@@ -123,6 +129,24 @@ class TonClient4Adapter {
   }
 
   /**
+     * Get block info by unix timestamp
+     * @param ts unix timestamp
+     * @returns block info
+     */
+  async getBlockByUtime(ts: number) {
+    // tonx shard api doesn't support get by utime
+    const result = await this.sendTonhubRequest('/block/utime/' + ts, 'GET');
+    let block = blockCodec.safeParse(result);
+    if (!block.success) {
+        throw Error('Mailformed response');
+    }
+    if (!block.data.exist) {
+        throw Error('Block is out of scope');
+    }
+    return block.data.block;
+}
+
+  /**
      * Get block info by seqno
      * @param seqno block sequence number
      * @param address account address
@@ -142,6 +166,55 @@ class TonClient4Adapter {
   }
 
   /**
+     * Get account lite info (without code and data)
+     * @param seqno block sequence number
+     * @param address account address
+     * @returns account lite info
+     */
+  async getAccountLite(seqno: number, address: Address) {
+    const data = await this.getAccount(seqno, address);
+    const result = convertGetAccountLite(data);
+
+    let account = accountLiteCodec.safeParse(result);
+    if (!account.success) {
+        throw Error('Mailformed response');
+    }
+    
+    return account.data;
+  }
+
+  /**
+     * Check if contract is deployed
+     * @param address addres to check
+     * @returns true if contract is in active state
+     */
+  async isContractDeployed(seqno: number, address: Address) {
+    let account = await this.getAccountLite(seqno, address);
+
+    return account.account.state.type === 'active';
+  }
+
+  /**
+     * Check if account was updated since
+     * @param seqno block sequence number
+     * @param address account address
+     * @param lt account last transaction lt
+     * @returns account change info
+     */
+  async isAccountChanged(seqno: number, address: Address, lt: bigint) {
+    const lastBlock = await this.getLastBlock();
+    const beforeAccount = await this.getAccount(seqno, address);
+    const afterAccount = await this.getAccount(lastBlock.last.seqno, address);
+    const result = convertIsAccountChanged(beforeAccount, afterAccount);
+
+    const changed = changedCodec.safeParse(result);
+    if (!changed.success) {
+        throw Error('Mailformed response');
+    }
+    return changed.data;
+  }
+
+  /**
      * Load unparsed account transactions
      * @param address address
      * @param lt last transaction lt
@@ -151,7 +224,7 @@ class TonClient4Adapter {
   async getAccountTransactions(address: Address, lt: bigint, hash: Buffer) {
 
     const path = '/account/' + address.toString({ urlSafe: true }) + '/tx/' + lt.toString(10) + '/' + toUrlSafe(hash.toString('base64'));
-    const tonhubData = await this.sendTonhubRequest(path, 'GET');   
+    const tonhubData = await this.sendTonhubRequest(path, 'GET');
 
     /*
     * To support the tonclient4 interface (raw: Cell, outMessages: Dictionary, etc...), we need to build their boc format from our tonx api response in future
@@ -182,6 +255,31 @@ class TonClient4Adapter {
     }
     return tx;
   }
+
+  /**
+     * Load parsed account transactions
+     * @param address address
+     * @param lt last transaction lt
+     * @param hash last transaction hash
+     * @param count number of transactions to load
+     * @returns parsed transactions
+     */
+  async getAccountTransactionsParsed(address: Address, lt: bigint, hash: Buffer, count: number = 20) {
+    const path = '/account/' + address.toString({ urlSafe: true }) + '/tx/parsed/' + lt.toString(10) + '/' + toUrlSafe(hash.toString('base64')) + '?' + new URLSearchParams({ count: count.toString() }).toString();
+    
+    const tonhubData = await this.sendTonhubRequest(path, 'GET');
+
+    /*
+    * To support the tonclient4 interface, we need to provide missing data in our tonx api response in future
+    */
+    const parsedTransactionsRes = parsedTransactionsCodec.safeParse(tonhubData);
+
+    if (!parsedTransactionsRes.success) {
+        throw Error('Mailformed response');
+    }
+
+    return parsedTransactionsRes.data as ParsedTransactions;
+}
 
   /**
      * Get network config

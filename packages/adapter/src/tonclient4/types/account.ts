@@ -39,3 +39,26 @@ export const accountCodec = z.object({
 });
 
 export type Account = z.infer<typeof accountCodec>;
+
+export const accountLiteCodec = z.object({
+    account: z.object({
+        state: z.union([
+            z.object({ type: z.literal('uninit') }),
+            z.object({ type: z.literal('active'), codeHash: z.string(), dataHash: z.string() }),
+            z.object({ type: z.literal('frozen'), stateHash: z.string() })
+        ]),
+        balance: z.object({
+            coins: z.string()
+        }),
+        last: z.union([
+            z.null(),
+            z.object({
+                lt: z.string(),
+                hash: z.string()
+            })
+        ]),
+        storageStat: z.union([z.null(), storageStatCodec])
+    })
+});
+
+export type AccountLite = z.infer<typeof accountLiteCodec>;
