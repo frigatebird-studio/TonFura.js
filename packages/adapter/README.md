@@ -1,4 +1,4 @@
-# @tonxjs/adapter
+# @tonx/adapter
 
 TONX JS adapter is an easy integration tool with popular ton client library. 
 - [@ton/ton](https://github.com/ton-org/ton) 
@@ -12,7 +12,7 @@ Before using it, you will need to get a key from TONX API.
 ### ton/core
 
 ```js
-import { ToncoreAdapter } from "@tonxjs/adapter";
+import { ToncoreAdapter } from "@tonx/adapter";
 
 const client = new ToncoreAdapter({
   network: "mainnet",
@@ -23,7 +23,7 @@ const client = new ToncoreAdapter({
 ### tonweb
 
 ```js
-import { TonWebAdapter } from "@tonxjs/adapter";
+import { TonWebAdapter } from "@tonx/adapter";
 
 const client = new TonWebAdapter({
   network: "mainnet",
@@ -34,7 +34,7 @@ const client = new TonWebAdapter({
 ### TonClient4
 
 ```js
-import { TonClient4Adapter } from "@tonxjs/adapter";
+import { TonClient4Adapter } from "@tonx/adapter";
 
 const client = new TonClient4Adapter({
   network: "mainnet",

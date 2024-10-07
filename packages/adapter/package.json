@@ -1,6 +1,10 @@
 {
-  "name": "@tonxjs/adapter",
+  "name": "@tonx/adapter",
   "version": "0.1.0",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./index.cjs",
   "type": "module",
   "exports": {
