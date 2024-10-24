@@ -9,7 +9,7 @@ describe('TonClient4Adapter', () => {
   let tonClient: TonClient4Adapter;
 
   beforeEach(() => {
-    tonClient = new TonClient4Adapter(network, apiKey);
+    tonClient = new TonClient4Adapter({ network, apiKey });
   });
 
   it('should initialize with correct properties', () => {
@@ -377,7 +377,7 @@ describe('TonClient4Adapter', () => {
       'Content-Type': 'application/json',
       },
     });
-    
+
 });
 });
 

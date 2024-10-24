@@ -29,12 +29,15 @@ class TonClient4Adapter {
   network: Network
   apiKey: string
 
-  constructor(
-    network: Network,
-    apiKey: string
-  ) {
-    this.network = network;
+  constructor({
+    apiKey,
+    network,
+  }: {
+    apiKey: string;
+    network: "mainnet" | "testnet";
+  }) {
     this.apiKey = apiKey;
+    this.network = network;
     this.endpoint = getJsonRpcUrl(network, apiKey);
   }
 
@@ -157,7 +160,7 @@ class TonClient4Adapter {
     * To support the tonclient4 interface get account by seqNo, we need to support it from our tonx api response in future
     */
     const result = await this.sendTonhubRequest('/block/' + seqno + '/' + address.toString({ urlSafe: true }), 'GET');
-    
+
     let account = accountCodec.safeParse(result);
     if (!account.success) {
       throw Error('Mailformed response');
@@ -179,7 +182,7 @@ class TonClient4Adapter {
     if (!account.success) {
         throw Error('Mailformed response');
     }
-    
+
     return account.data;
   }
 
@@ -266,7 +269,7 @@ class TonClient4Adapter {
      */
   async getAccountTransactionsParsed(address: Address, lt: bigint, hash: Buffer, count: number = 20) {
     const path = '/account/' + address.toString({ urlSafe: true }) + '/tx/parsed/' + lt.toString(10) + '/' + toUrlSafe(hash.toString('base64')) + '?' + new URLSearchParams({ count: count.toString() }).toString();
-    
+
     const tonhubData = await this.sendTonhubRequest(path, 'GET');
 
     /*
@@ -357,7 +360,7 @@ class TonClient4Adapter {
      * @returns opened contract
      */
   open<T extends Contract>(contract: T) {
-    
+
     return openContract<T>(contract, (args) => createProvider(this, null, args.address, args.init));
   }
 
