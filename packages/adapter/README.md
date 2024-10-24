@@ -1,6 +1,6 @@
 # @tonfura/adapter
 
-TONX JS adapter is an easy integration tool with popular ton client library. 
+TONX JS adapter is an easy integration tool with popular ton client libraries.
 - [@ton/ton](https://github.com/ton-org/ton) 
 - [tonweb](https://github.com/toncenter/tonweb)
 - [TonClient4](https://github.com/ton-org/ton/blob/master/src/client/TonClient4.ts)
@@ -46,4 +46,4 @@ const client = new TonClient4Adapter({
 
 [TONX API](https://tonxapi.com/)
 
-[Api document](https://docs.tonxapi.com/docs/welcome-to-tonxapi)
+[API document](https://docs.tonxapi.com/docs/welcome-to-tonxapi)
